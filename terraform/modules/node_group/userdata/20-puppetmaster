@@ -1,0 +1,33 @@
+# This is a snippet so should not have a shebang
+# shellcheck shell=bash
+#
+# Snippet: puppetserver
+#
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] START SNIPPET: puppetserver"
+
+cat <<EOF >/etc/puppetlabs/puppet/csr_attributes.yaml
+extension_requests:
+ pp_instance_id: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+ pp_image_name: $(curl -s http://169.254.169.254/latest/meta-data/ami-id)
+ pp_role: $(/opt/puppetlabs/bin/facter aws_role)
+ pp_region:  $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')
+EOF
+
+/opt/puppetlabs/bin/puppet config set certname "$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+
+# on the machine run a verify
+/opt/puppetlabs/bin/puppet apply -e 'notify { "Hello from Puppet": }'
+
+# Create a workdir
+mkdir -p /var/puppet-repo
+cd /var/puppet-repo || return
+
+# Get git and checkout govuk-aws
+yum install -y git
+git clone https://github.com/SeanHood/puppet-asg-poc.git
+
+# Run the bootstrap script
+#TODO: Write bootstrap script
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: puppetserver"

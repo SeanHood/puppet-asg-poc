@@ -1,0 +1,34 @@
+# This is a snippet so should not have a shebang
+# shellcheck shell=bash
+#
+# Snippet: puppet-client
+#
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] START SNIPPET: puppet-client"
+
+rm -rf /etc/puppet
+mkdir -p /etc/puppet
+if [ -d /var/lib/puppet/ssl ] ; then
+  rm -rf /var/lib/puppet/ssl
+fi
+cat <<EOF >/etc/puppet/puppet.conf
+  [main]
+  pluginsync = true
+
+  [agent]
+  report = false
+  configtimeout = 600
+  certname = $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+EOF
+
+cat <<EOF >/etc/puppetlabs/puppet/csr_attributes.yaml
+extension_requests:
+ pp_instance_id: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+ pp_image_name: $(curl -s http://169.254.169.254/latest/meta-data/ami-id)
+ pp_role: $(/opt/puppetlabs/bin/facter aws_role)
+ pp_region:  $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')
+EOF
+
+puppet agent --pluginsync --configtimeout 600 --test --waitforcert 60
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: puppet-client"

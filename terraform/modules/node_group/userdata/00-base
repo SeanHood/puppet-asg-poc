@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -ex
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] START SNIPPET: base"
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: set some useful variables"
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F\" '{print $4}')
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: set hostname to instance id"
+hostnamectl set-hostname --static $INSTANCE_ID
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: install Puppet repository ..."
+rpm -Uvh https://yum.puppet.com/puppet6-release-el-7.noarch.rpm
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: install epel-release ..."
+yum install -y epel-release # Needed for jq
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: install awscli and, jq after installing epel ..."
+yum install -y jq awscli
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: generate local facts ..."
+TAGS=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID" "Name=tag-key,Values=aws_*" --region=$REGION --output=json | jq -r '.Tags[] | [.Key, .Value] | @csv' | tr -d '"')
+
+mkdir -p /etc/facter/facts.d/
+
+for I in $TAGS
+do
+  KEY=$(echo $I | cut -d"," -f1)
+  VALUE=$(echo $I | cut -d"," -f2)
+  echo $KEY=$VALUE > /etc/facter/facts.d/$KEY.txt
+done
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] base: install Puppet ..."
+yum install -y puppet-agent
+systemctl stop puppet
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: base"
