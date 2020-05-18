@@ -1,5 +1,13 @@
 forge 'https://forge.puppet.com'
 
+mod 'puppet-puppetserver', '3.0.1'
+mod 'puppetlabs-stdlib', '6.3.0'
+mod 'puppetlabs-puppetserver_gem', '1.1.1'
+mod 'camptocamp-augeas', '1.9.0'
+mod 'herculesteam-augeasproviders_core', '2.6.0'
+mod 'puppet-r10k', '8.3.0'
+
+
 # Modules from the Puppet Forge
 # Versions should be updated to be the latest at the time you start
 #mod 'puppetlabs/inifile', '3.0.0'

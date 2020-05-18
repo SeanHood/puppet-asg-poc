@@ -27,7 +27,7 @@ resource "aws_security_group" "puppetserver" {
     from_port   = 22
     protocol    = "TCP"
     to_port     = 22
-    cidr_blocks = ["88.98.85.22/32"]
+    cidr_blocks = ["0.0.0.0/32"]
   }
 
   egress {
@@ -37,3 +37,5 @@ resource "aws_security_group" "puppetserver" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+# TODO: IAM Policy which allows the EC2 instance to fetch /puppet-asg-poc/deploy-key

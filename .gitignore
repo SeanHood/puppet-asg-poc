@@ -1,3 +1,6 @@
 .idea
 .terraform
 *.tfstate*
+.vagrant
+ssh-key
+modules
