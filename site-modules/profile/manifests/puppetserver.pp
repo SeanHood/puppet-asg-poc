@@ -8,10 +8,10 @@ class profile::puppetserver {
 
   # This is a demo, let's keep things small
   puppetserver::config::java_arg { '-Xms':
-    value   => '1g',
+    value   => '512m',
   }
   puppetserver::config::java_arg { '-Xmx':
-    value   => '1g',
+    value   => '512m',
   }
 
 
