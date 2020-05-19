@@ -7,6 +7,8 @@ provider "aws" {
   region = "eu-west-2"
 }
 
+data "aws_caller_identity" "current" {}
+
 
 module "puppetserver" {
   source = "../modules/node_group"
@@ -38,4 +40,28 @@ resource "aws_security_group" "puppetserver" {
   }
 }
 
-# TODO: IAM Policy which allows the EC2 instance to fetch /puppet-asg-poc/deploy-key
+
+resource "aws_iam_policy" "node_iam_policy_puppet_deploykey" {
+  name   = "${var.name}-puppet-deploy-key"
+  path   = "/"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1589877506030",
+      "Action": [
+        "ssm:GetParameter"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:parameter/puppet-asg-poc/ssh-key"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "node_iam_role_policy_attachment_default" {
+  role       = module.puppetserver.instance_iam_role_name
+  policy_arn = aws_iam_policy.node_iam_policy_puppet_deploykey.arn
+}

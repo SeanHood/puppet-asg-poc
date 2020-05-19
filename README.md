@@ -8,6 +8,22 @@ This repo is a proof of concept on knitting together the following technologies,
 * AWS AutoScaling Groups
 * Terraform (0.12.x)
 
+## Deployment Procedure
+
+1. Create an ssh key pair for puppet to access Github, see ssh-key.md
+
+1. Ensure you have aws creds in your `~/.aws/credentials` file. We'll be using the `default` credentials
+
+1. Deploy puppet server
+    1. `cd terraform/05-puppetserver`
+    2. `terraform plan`
+    3. `terraform apply`
+
+1. Deploy the sample app
+    1. `cd terraform/10-appserver`
+    2. `terraform plan`
+    3. `terraform apply`
+
 
 ## Credits
 

@@ -19,10 +19,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", name: "Run Puppet", inline: <<-SHELL
     # Need git
-    yum install git -y 
+    yum install git awscli -y
 
-    # Demo ssh key to pull config
-    cp /vagrant/ssh-key/puppet-deploykey /root/.ssh/id_rsa
+    # Fetch our
+    aws ssm get-parameter --name "/puppet-asg-poc/ssh-key" --output text --query Parameter.Value --with-decryption >> /root/.ssh/id_rsa
     chmod 0600 /root/.ssh/id_rsa
 
     # Need r10k to pull down the needed modules

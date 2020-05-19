@@ -26,7 +26,7 @@ class profile::puppetserver {
     },
   }
 
-  # TODO: Need git deploy key. Need creds to pull the repo
+  # TODO: Need git deploy key. Need creds to pull the repo.
   # TODO: Webhook?
 
 }
