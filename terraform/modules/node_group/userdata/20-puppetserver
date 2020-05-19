@@ -1,0 +1,61 @@
+# This is a snippet so should not have a shebang
+# shellcheck shell=bash
+#
+# Snippet: puppetserver
+#
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] START SNIPPET: puppetserver"
+
+cat <<EOF >/etc/puppetlabs/puppet/csr_attributes.yaml
+extension_requests:
+ pp_instance_id: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+ pp_image_name: $(curl -s http://169.254.169.254/latest/meta-data/ami-id)
+ pp_role: $(/opt/puppetlabs/bin/facter aws_role)
+ pp_region:  $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')
+EOF
+
+/opt/puppetlabs/bin/puppet config set certname "$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+
+# on the machine run a verify
+/opt/puppetlabs/bin/puppet apply -e 'notify { "Hello from Puppet": }'
+
+
+# Run the bootstrap script
+
+# Need git
+yum install git awscli -y 
+
+# Fetch the ssh key to pull the repo
+aws ssm get-parameter --region eu-west-2 --name "/puppet-asg-poc/ssh-key" --output text --query Parameter.Value --with-decryption >> /root/.ssh/id_rsa
+chmod 0600 /root/.ssh/id_rsa
+
+# Need r10k to pull down the needed modules
+/opt/puppetlabs/puppet/bin/gem install r10k
+
+# Trust Github.com
+if ! grep github.com /etc/ssh/ssh_known_hosts > /dev/null
+then
+    echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /etc/ssh/ssh_known_hosts
+fi
+
+# Prepare a dir for our code
+mkdir -p /etc/puppetlabs/code/environments/
+cd /etc/puppetlabs/code/environments/ || return
+
+# Clone into /etc/puppetlabs/code/environments/bootstrap
+git clone ssh://git@github.com/SeanHood/puppet-asg-poc.git bootstrap || true
+
+# Jump into our dir
+cd /etc/puppetlabs/code/environments/bootstrap || return
+
+# Fetch latest, just incase this script has been ran over and over, the clone wont fetch anything new
+git pull
+
+# Install all our puppet modules
+/opt/puppetlabs/puppet/bin/r10k puppetfile install -v
+
+# Run Puppet! N.B. We should't specify role here, but it works for now
+/opt/puppetlabs/bin/puppet apply -e "include role::puppetserver" -v --environment bootstrap
+
+
+echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: puppetserver"
