@@ -6,19 +6,15 @@
 
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] START SNIPPET: puppet-client"
 
-rm -rf /etc/puppet
-mkdir -p /etc/puppet
-if [ -d /var/lib/puppet/ssl ] ; then
-  rm -rf /var/lib/puppet/ssl
-fi
-cat <<EOF >/etc/puppet/puppet.conf
+
+# TODO: This is in the wrong place
+cat <<EOF >/etc/puppetlabs/puppet/puppet.conf
   [main]
   pluginsync = true
 
   [agent]
-  report = false
+  report = true
   configtimeout = 600
-  certname = $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
   environment = master
 EOF
 
@@ -33,8 +29,8 @@ EOF
 
 # TODO: REMOVE THIS HACK
 # As with the puppetserver bit, this is a temp work around as there's no fixed hostname for the puppetserver
-echo '35.178.3.195 puppet' >> /etc/hosts
+echo '172.31.23.103 puppet' >> /etc/hosts
 
-puppet agent --pluginsync --configtimeout 600 --test --waitforcert 60
+/opt/puppetlabs/bin/puppet agent --pluginsync --configtimeout 600 --test --waitforcert 60
 
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: puppet-client"
