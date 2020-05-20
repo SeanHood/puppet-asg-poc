@@ -31,6 +31,6 @@ EOF
 # As with the puppetserver bit, this is a temp work around as there's no fixed hostname for the puppetserver
 echo '172.31.23.103 puppet' >> /etc/hosts
 
-/opt/puppetlabs/bin/puppet agent --pluginsync --configtimeout 600 --test --waitforcert 60
+/opt/puppetlabs/bin/puppet agent -tv --waitforcert 60
 
 echo "[$(date '+%H:%M:%S %d-%m-%Y')] END SNIPPET: puppet-client"
