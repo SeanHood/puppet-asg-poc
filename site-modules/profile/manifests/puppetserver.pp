@@ -20,10 +20,22 @@ class profile::puppetserver {
     sources => {
       'puppet' => {
         'remote'  => 'ssh://git@github.com/SeanHood/puppet-asg-poc.git',
-        'basedir' => "${::settings::confdir}/environments",
+        'basedir' => $::settings::environmentpath,
         'prefix'  => false,
       }
     },
+  }
+
+  cron {'r10k':
+    command => '/bin/r10k deploy environment -p',
+    # user    => 'puppet', # TODO: Need to sort file perms for /etc/puppetlabs
+    minute  => '*/15' # Deploy fresh code every 15 minutes
+  }
+
+  # TODO: Remove this hack.
+  # DNS/LB's/Service discovery add a little much to the PoC for now.
+  host {'puppet':
+    ip => '127.0.0.1'
   }
 
   # TODO: Need git deploy key. Need creds to pull the repo.
