@@ -29,3 +29,8 @@ node default {
   # Example:
   #   class { 'my_class': }
 }
+
+# The MAGIC
+$role = $trusted['extensions']['pp_role']
+
+include "role::${::role}"
