@@ -19,6 +19,7 @@ cat <<EOF >/etc/puppet/puppet.conf
   report = false
   configtimeout = 600
   certname = $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+  environment = master
 EOF
 
 cat <<EOF >/etc/puppetlabs/puppet/csr_attributes.yaml
