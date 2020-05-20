@@ -14,6 +14,12 @@ class profile::puppetserver {
     value   => '512m',
   }
 
+  # TODO: Don't do this in prod
+  file { '/etc/puppetlabs/puppet/autosign.conf':
+    ensure  => 'present',
+    content => '*'
+  }
+
 
   # Puppetserver wouldn't function without r10k so it's in this profile, rather than it's own
   class { 'r10k':
