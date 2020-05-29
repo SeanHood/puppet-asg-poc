@@ -15,6 +15,8 @@ module "appserver" {
 
   instance_security_group_ids = [aws_security_group.appserver.id]
 
+  instance_key_name = var.demo-instance_key_name
+  instance_public_key = var.demo-instance_public_key
   puppet_application = "blue"
   puppet_role        = "appserver"
 }
@@ -26,7 +28,7 @@ resource "aws_security_group" "appserver" {
     from_port   = 22
     protocol    = "TCP"
     to_port     = 22
-    cidr_blocks = ["88.98.85.22/32"]
+    cidr_blocks = [var.demo-my-ip]
   }
 
   ingress {

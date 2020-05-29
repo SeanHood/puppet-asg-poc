@@ -9,7 +9,6 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
-
 module "puppetserver" {
   source = "../modules/node_group"
 
@@ -17,6 +16,9 @@ module "puppetserver" {
   instance_type = "t3.micro"
 
   instance_security_group_ids = [aws_security_group.puppetserver.id]
+
+  instance_key_name = var.demo-instance_key_name
+  instance_public_key = var.demo-instance_public_key
 
   puppet_application = "idk"
   puppet_role        = "puppetserver"
@@ -26,13 +28,23 @@ resource "aws_security_group" "puppetserver" {
   name = "puppetserver-sg"
 
   ingress {
+    description = "SSH"
     from_port   = 22
     protocol    = "TCP"
     to_port     = 22
-    cidr_blocks = ["0.0.0.0/32"]
+    cidr_blocks = [var.demo-my-ip]
+  }
+
+  ingress {
+    description = "Allow Puppet to everything in our VPC"
+    from_port = 8140
+    protocol = "TCP"
+    to_port = 8140
+    cidr_blocks = ["172.31.0.0/16"] # TODO: Replace with security group rather than CIDR's
   }
 
   egress {
+    description = "Allow everything to go out"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -42,7 +54,7 @@ resource "aws_security_group" "puppetserver" {
 
 
 resource "aws_iam_policy" "node_iam_policy_puppet_deploykey" {
-  name   = "${var.name}-puppet-deploy-key"
+  name   = "puppetserver-puppet-deploy-key"
   path   = "/"
   policy = <<EOF
 {
@@ -65,3 +77,4 @@ resource "aws_iam_role_policy_attachment" "node_iam_role_policy_attachment_defau
   role       = module.puppetserver.instance_iam_role_name
   policy_arn = aws_iam_policy.node_iam_policy_puppet_deploykey.arn
 }
+
