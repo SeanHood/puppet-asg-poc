@@ -1,23 +1,23 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "centos/7"
-  config.vm.hostname = "local-node"
+Vagrant.configure('2') do |config|
+  config.vm.box = 'centos/7'
+  config.vm.hostname = 'local-node'
 
   # config.vm.synced_folder "./", "/tmp/puppet"
 
-  config.vm.provider "virtualbox" do |vb|
-     vb.memory = "4096"
+  config.vm.provider 'virtualbox' do |vb|
+    vb.memory = '4096'
   end
 
-  config.vm.provision "shell", name: "Install Puppet", inline: <<-SHELL
-    puppet --version || 
+  config.vm.provision 'shell', name: 'Install Puppet', inline: <<-SHELL
+    puppet --version ||
     (rpm -Uvh https://yum.puppet.com/puppet6-release-el-7.noarch.rpm && \
     yum install puppet-agent -y)
   SHELL
 
-  config.vm.provision "shell", name: "Run Puppet", inline: <<-SHELL
+  config.vm.provision 'shell', name: 'Run Puppet', inline: <<-SHELL
     # Need git
     yum install git awscli -y
 
@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
 
     # Fetch latest
     git pull
-  
+
     # Install all our puppet modules
     /opt/puppetlabs/puppet/bin/r10k puppetfile install -v
 
