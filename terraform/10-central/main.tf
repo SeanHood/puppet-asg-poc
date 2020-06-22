@@ -25,9 +25,9 @@ module "central" {
   puppet_application          = "blue"
   puppet_role                 = "central"
 
-  asg_min_size         = 3
-  asg_desired_capacity = 6
-  asg_max_size         = 10
+  asg_min_size         = 1
+  asg_desired_capacity = 2
+  asg_max_size         = 3
 
   instance_target_group_arns = [aws_alb_target_group.nodes.arn]
 }
@@ -97,10 +97,10 @@ resource "aws_alb_target_group" "nodes" {
 }
 
 // Attach the nodes that come up in an ASG to the Target Group
-resource "aws_autoscaling_attachment" "asg_attachment" {
-  autoscaling_group_name = module.central.autoscaling_group_name
-  alb_target_group_arn   = aws_alb_target_group.nodes.arn
-}
+//resource "aws_autoscaling_attachment" "asg_attachment" {
+//  autoscaling_group_name = module.central.autoscaling_group_name
+//  alb_target_group_arn   = aws_alb_target_group.nodes.arn
+//}
 
 
 // Allow all traffic from the internet into our ALB
